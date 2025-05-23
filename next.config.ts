@@ -1,7 +1,9 @@
-// next.config.ts
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // Netlify에서 정적 사이트를 호스팅할 수 있도록 설정
+  reactStrictMode: true,
+  // output: 'export', // ❌ 이 줄을 주석 처리하거나 삭제
 };
 
-export default nextConfig;
+module.exports = nextConfig;
+
 
