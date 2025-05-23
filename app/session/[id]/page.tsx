@@ -1,3 +1,4 @@
+// app/session/[id]/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -7,7 +8,11 @@ interface Params {
   id: string;
 }
 
-export default function SessionEntry({ params }: { params: Params }) {
+interface Props {
+  params: Params;
+}
+
+export default function SessionEntry({ params }: Props) {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const router = useRouter();
