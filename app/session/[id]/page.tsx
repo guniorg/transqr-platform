@@ -4,13 +4,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface Params {
+type Params = {
   id: string;
-}
+};
 
-interface Props {
+type Props = {
   params: Params;
-}
+};
 
 export default function SessionEntry({ params }: Props) {
   const [email, setEmail] = useState('');
@@ -61,6 +61,7 @@ export default function SessionEntry({ params }: Props) {
     </main>
   );
 }
+
 
 
 
