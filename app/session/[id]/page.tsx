@@ -4,7 +4,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function SessionEntry({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function SessionEntry({ params }: PageProps) {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const router = useRouter();
@@ -12,11 +18,9 @@ export default function SessionEntry({ params }: { params: { id: string } }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 여기에 API 전송 또는 localStorage 저장 가능
     console.log('참석 세션:', sessionId);
     console.log('입력된 이메일:', email);
     setSubmitted(true);
-    // 이후 통역 페이지로 라우팅할 수도 있음
     // router.push(`/session/${sessionId}/live`);
   };
 
