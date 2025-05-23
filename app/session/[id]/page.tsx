@@ -3,13 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface PageProps {
-  params: {
-    id: string;
-  };
+interface Params {
+  id: string;
 }
 
-export default function SessionEntry({ params }: PageProps) {
+export default function SessionEntry({ params }: { params: Params }) {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const router = useRouter();
@@ -58,5 +56,6 @@ export default function SessionEntry({ params }: PageProps) {
     </main>
   );
 }
+
 
 
