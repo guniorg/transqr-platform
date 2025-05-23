@@ -4,12 +4,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-type Params = {
-  id: string;
-};
-
+// 타입을 명확하게 정의
 type Props = {
-  params: Params;
+  params: {
+    id: string;
+  };
 };
 
 export default function SessionEntry({ params }: Props) {
@@ -61,7 +60,6 @@ export default function SessionEntry({ params }: Props) {
     </main>
   );
 }
-
 
 
 
