@@ -1,4 +1,3 @@
-// app/session/[id]/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -59,4 +58,5 @@ export default function SessionEntry({ params }: PageProps) {
     </main>
   );
 }
+
 
