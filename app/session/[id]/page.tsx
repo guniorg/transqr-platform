@@ -4,28 +4,17 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-// ✅ 타입을 명확하게 정의
-interface Params {
-  id: string;
-}
-
-interface Props {
-  params: Params;
-}
-
-export default function SessionEntry({ params }: Props) {
+export default function SessionEntry(props: any) {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const router = useRouter();
-  const sessionId = params.id;
+  const sessionId = props?.params?.id;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('참석 세션:', sessionId);
     console.log('입력된 이메일:', email);
     setSubmitted(true);
-    // 필요한 경우 페이지 이동
-    // router.push(`/session/${sessionId}/live`);
   };
 
   return (
@@ -63,7 +52,6 @@ export default function SessionEntry({ params }: Props) {
     </main>
   );
 }
-
 
 
 
