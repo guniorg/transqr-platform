@@ -4,13 +4,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-type Params = {
-  id: string;
-};
-
-type Props = {
-  params: Params;
-};
+interface Props {
+  params: {
+    id: string;
+  };
+}
 
 export default function SessionEntry({ params }: Props) {
   const [email, setEmail] = useState('');
