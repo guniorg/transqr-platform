@@ -3,13 +3,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PageProps } from 'next'; // 이 부분 추가
 
-interface Params {
-  id: string;
+interface PageProps {
+  params: {
+    id: string;
+  };
 }
 
-export default function SessionEntry({ params }: PageProps<Params>) {
+export default function SessionEntry({ params }: PageProps) {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function SessionEntry({ params }: PageProps<Params>) {
     console.log('참석 세션:', sessionId);
     console.log('입력된 이메일:', email);
     setSubmitted(true);
+    // router.push(`/session/${sessionId}/live`);
   };
 
   return (
@@ -57,3 +59,4 @@ export default function SessionEntry({ params }: PageProps<Params>) {
     </main>
   );
 }
+
