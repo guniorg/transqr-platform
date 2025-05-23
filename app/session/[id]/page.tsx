@@ -21,7 +21,6 @@ export default function SessionEntry({ params }: Props) {
     console.log('참석 세션:', sessionId);
     console.log('입력된 이메일:', email);
     setSubmitted(true);
-    // router.push(`/session/${sessionId}/live`);
   };
 
   return (
@@ -59,6 +58,7 @@ export default function SessionEntry({ params }: Props) {
     </main>
   );
 }
+
 
 
 
