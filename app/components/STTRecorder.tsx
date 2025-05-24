@@ -1,10 +1,16 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 
+// ✅ 이 부분 추가
+declare global {
+  interface Window {
+    webkitSpeechRecognition: any;
+    SpeechRecognition: any;
+  }
+}
+
 export default function STTRecorder() {
-  const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState('');
+  const [text, setText] = useState('');
 
   useEffect(() => {
     const SpeechRecognition =
@@ -17,33 +23,31 @@ export default function STTRecorder() {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = 'ko-KR'; // 한국어
-    recognition.interimResults = true;
+    recognition.lang = 'ko-KR';
     recognition.continuous = true;
+    recognition.interimResults = false;
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const result = Array.from(event.results)
-        .map((res) => res[0].transcript)
-        .join('');
-      setTranscript(result);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[event.results.length - 1][0].transcript;
+      setText((prev) => prev + '\n' + transcript);
     };
 
-    if (isListening) {
-      recognition.start();
-    } else {
-      recognition.stop();
-    }
+    recognition.start();
 
     return () => recognition.stop();
-  }, [isListening]);
+  }, []);
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>🎤 Speech to Text (STT)</h2>
-      <button onClick={() => setIsListening((prev) => !prev)}>
-        {isListening ? '⏹ 중지' : '🎙 시작'}
-      </button>
-      <p><strong>음성 텍스트:</strong> {transcript}</p>
+    <div style={{ padding: 20 }}>
+      <h2>🎤 음성 텍스트 출력</h2>
+      <textarea
+        rows={6}
+        style={{ width: '100%' }}
+        value={text}
+        readOnly
+        placeholder="말하면 텍스트로 표시됩니다"
+      />
     </div>
   );
 }
+
