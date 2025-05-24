@@ -1,9 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  // output: 'export', // ❌ 이 줄을 주석 처리하거나 삭제
+  env: {
+    GOOGLE_TRANSLATE_API_KEY: process.env.GOOGLE_TRANSLATE_API_KEY,
+  },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
+
 
 
