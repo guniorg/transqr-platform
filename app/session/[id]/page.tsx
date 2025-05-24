@@ -2,27 +2,42 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-export default function SessionEntry() {
-  const params = useParams();
-  const sessionId = params.id as string;
-
+export default function SessionEntry({ params }: { params: { id: string } }) {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
+  const sessionId = params.id;
+
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isValidEmail(email)) {
+      setError('올바른 이메일 형식을 입력해 주세요.');
+      return;
+    }
+
+    setError('');
     console.log('참석 세션:', sessionId);
     console.log('입력된 이메일:', email);
+
     setSubmitted(true);
-    // router.push(`/session/${sessionId}/live`) 등의 리다이렉트 가능
+
+    // 향후 통역 페이지로 라우팅
+    // router.push(`/session/${sessionId}/live`);
   };
 
   return (
     <main className="min-h-screen bg-white text-gray-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-6 border p-6 rounded-xl shadow-md">
         <h1 className="text-2xl font-bold text-center">TransQR 세미나 참석</h1>
+
         {submitted ? (
           <div className="text-center">
             <p className="text-green-600 font-semibold">✅ 참석이 확인되었습니다.</p>
@@ -33,15 +48,20 @@ export default function SessionEntry() {
             <p className="text-sm text-gray-700 text-center">
               아래에 이메일을 입력하면, 발표 요약본이 세션 종료 후 자동으로 발송됩니다.
             </p>
+
             <input
               type="email"
               name="email"
               placeholder="you@example.com"
               required
+              pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
               className="w-full border border-gray-300 px-4 py-2 rounded-lg"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+
+            {error && <p className="text-red-600 text-sm">{error}</p>}
+
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
@@ -54,6 +74,7 @@ export default function SessionEntry() {
     </main>
   );
 }
+
 
 
 

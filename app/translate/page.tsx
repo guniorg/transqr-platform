@@ -1,97 +1,106 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react'
 
-export default function Home() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+export default function TranslatePage() {
+  const [text, setText] = useState('')
+  const [translated, setTranslated] = useState('')
+  const [isListening, setIsListening] = useState(false)
+  const recognitionRef = useRef<any>(null)
 
-  const handleStart = () => {
-    setLoading(true);
-    setTimeout(() => {
-      router.push('/translate');
-    }, 800);
-  };
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      if (!SpeechRecognition) {
+        alert('이 브라우저는 음성 인식을 지원하지 않습니다.')
+        return
+      }
+
+      const recognition = new SpeechRecognition()
+      recognition.lang = 'ko-KR'
+      recognition.continuous = true
+      recognition.interimResults = true
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        let transcript = ''
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript
+        }
+        setText(transcript)
+
+        // 마침표 등 문장 끝났을 때만 번역
+        if (/[.!?\\u3002]$/.test(transcript.trim())) {
+          handleTranslate(transcript)
+        }
+      }
+
+      recognitionRef.current = recognition
+    }
+  }, [])
+
+  const startListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.start()
+      setIsListening(true)
+    }
+  }
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    }
+  }
+
+  const handleTranslate = async (inputText: string) => {
+    const res = await fetch('/api/translate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: inputText,
+        target: 'en',
+      }),
+    })
+
+    const data = await res.json()
+    const translatedText = data?.data?.translations?.[0]?.translatedText || '번역 실패'
+    setTranslated(translatedText)
+
+    // TTS
+    const utterance = new SpeechSynthesisUtterance(translatedText)
+    utterance.lang = 'en-US'
+    speechSynthesis.speak(utterance)
+  }
 
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        padding: '2rem',
-        background: 'linear-gradient(to bottom, #0070f3, #0a0a23)',
-        color: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', textAlign: 'center' }}>
-        실시간 AI 통역으로<br />언어의 장벽을 허물다
-      </h1>
-      <p style={{ marginTop: '1rem', fontSize: '1.1rem', opacity: 0.9 }}>
-        QR 코드 하나로 시작하는 통역 서비스
-      </p>
+    <div className="p-4 max-w-xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">🎙️ 실시간 통역 테스트</h1>
 
       <button
-        onClick={handleStart}
-        disabled={loading}
-        style={{
-          marginTop: '2rem',
-          padding: '0.75rem 2rem',
-          fontSize: '1.1rem',
-          fontWeight: 600,
-          borderRadius: '8px',
-          backgroundColor: '#fff',
-          color: '#0070f3',
-          border: 'none',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-          transition: 'all 0.3s ease',
-          transform: loading ? 'scale(0.97)' : 'scale(1)',
-        }}
+        onClick={isListening ? stopListening : startListening}
+        className={`px-4 py-2 rounded ${
+          isListening ? 'bg-red-500' : 'bg-blue-600'
+        } text-white font-semibold`}
       >
-        {loading ? (
-          <>
-            <span
-              style={{
-                width: '18px',
-                height: '18px',
-                border: '2px solid #0070f3',
-                borderTop: '2px solid transparent',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-              }}
-            />
-            로딩 중...
-          </>
-        ) : (
-          '지금 시작하기'
-        )}
+        {isListening ? '🛑 중지' : '🎤 시작'}
       </button>
 
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
-
-      <section style={{ marginTop: '4rem', textAlign: 'left', maxWidth: '600px' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>📌 어떻게 작동하나요?</h2>
-        <ul style={{ fontSize: '1.1rem', lineHeight: 1.8 }}>
-          <li>📱 <strong>QR 코드 스캔으로 시작:</strong> 설치 없이 바로 참여 가능</li>
-          <li>🌐 <strong>실시간 AI 통역:</strong> 40개 이상의 언어를 즉시 번역</li>
-          <li>🎧 <strong>블루투스 이어폰 연동:</strong> 번역된 음성을 개인에게 전달</li>
-          <li>📝 <strong>자동 요약:</strong> 통역 후 AI가 핵심 내용 요약</li>
-        </ul>
-      </section>
-    </main>
-  );
+      <div className="mt-6">
+        <p className="text-gray-500 text-sm mb-1">🎧 입력한 텍스트</p>
+        <textarea
+          rows={3}
+          className="w-full p-2 border rounded mb-3"
+          value={text}
+          readOnly
+        />
+        <p className="text-gray-500 text-sm mb-1">🌐 번역 결과</p>
+        <div className="w-full p-2 border rounded bg-gray-100 min-h-[60px]">{translated}</div>
+      </div>
+    </div>
+  )
 }
 
 
