@@ -1,4 +1,6 @@
-// app/session/[id]/live/page.tsx
+// 이전 파일 경로: app/session/[id]/live/page.tsx
+// 수정 후 경로에 맞는 코드로 유지
+
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -20,69 +22,57 @@ export default function LiveTranslationPage() {
 
       const recognition = new SpeechRecognition();
       recognition.lang = 'ko-KR';
-      recognition.interimResults = false;
+      recognition.interimResults = true;
       recognition.continuous = true;
 
       recognition.onresult = async (event: SpeechRecognitionEvent) => {
-        const lastResult = event.results[event.results.length - 1];
-        const sentence = lastResult[0].transcript;
-        setOriginalText(sentence);
+        const last = event.results.length - 1;
+        const transcript = event.results[last][0].transcript;
+        setOriginalText(transcript);
 
         const res = await fetch('/api/translate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: sentence, target: 'vi' }),
+          body: JSON.stringify({ text: transcript, target: 'en' }),
         });
 
         const data = await res.json();
-        const result = data?.data?.translations?.[0]?.translatedText;
-        setTranslatedText(result || '번역 실패');
+        const translated = data?.data?.translations?.[0]?.translatedText || '번역 실패';
+        setTranslatedText(translated);
       };
 
       recognitionRef.current = recognition;
     }
   }, []);
 
-  const startListening = () => {
+  const handleListen = () => {
     if (recognitionRef.current) {
-      recognitionRef.current.start();
-      setListening(true);
-    }
-  };
-
-  const stopListening = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setListening(false);
+      if (!listening) {
+        recognitionRef.current.start();
+      } else {
+        recognitionRef.current.stop();
+      }
+      setListening(!listening);
     }
   };
 
   return (
-    <main className="min-h-screen p-6 bg-gray-100">
-      <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow">
-        <h1 className="text-2xl font-bold text-center mb-6">실시간 통역</h1>
-
-        <div className="space-y-4">
-          <button
-            onClick={listening ? stopListening : startListening}
-            className={`w-full py-2 rounded text-white font-semibold transition ${
-              listening ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-          >
-            {listening ? '중지하기' : '지금 시작하기'}
-          </button>
-
-          <div className="border-t pt-4">
-            <p className="text-sm text-gray-500">원문:</p>
-            <p className="text-lg text-black min-h-[2rem]">{originalText}</p>
-          </div>
-
-          <div className="border-t pt-4">
-            <p className="text-sm text-gray-500">번역 결과:</p>
-            <p className="text-lg text-green-600 min-h-[2rem]">{translatedText}</p>
-          </div>
-        </div>
+    <div className="p-4 max-w-2xl mx-auto text-center">
+      <h1 className="text-2xl font-bold mb-4">실시간 음성 인식 및 번역</h1>
+      <button
+        onClick={handleListen}
+        className="mb-4 px-4 py-2 rounded bg-blue-600 text-white"
+      >
+        {listening ? '중지' : '시작'}
+      </button>
+      <div className="mb-4">
+        <p className="text-sm text-gray-500">🎤 원문:</p>
+        <p className="border rounded p-2 bg-gray-100 min-h-[48px]">{originalText}</p>
       </div>
-    </main>
+      <div>
+        <p className="text-sm text-gray-500">🌍 번역:</p>
+        <p className="border rounded p-2 bg-green-50 min-h-[48px]">{translatedText}</p>
+      </div>
+    </div>
   );
 }
