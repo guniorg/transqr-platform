@@ -1,78 +1,56 @@
-// 이전 파일 경로: app/session/[id]/live/page.tsx
-// 수정 후 경로에 맞는 코드로 유지
-
+// app/session/[id]/page.tsx
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function LiveTranslationPage() {
-  const [listening, setListening] = useState(false);
-  const [originalText, setOriginalText] = useState('');
-  const [translatedText, setTranslatedText] = useState('');
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+export default function SessionEntry({ params }: { params: { id: string } }) {
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const router = useRouter();
+  const sessionId = params.id;
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert('이 브라우저는 음성 인식을 지원하지 않습니다.');
-        return;
-      }
-
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'ko-KR';
-      recognition.interimResults = true;
-      recognition.continuous = true;
-
-      recognition.onresult = async (event: SpeechRecognitionEvent) => {
-        const last = event.results.length - 1;
-        const transcript = event.results[last][0].transcript;
-        setOriginalText(transcript);
-
-        const res = await fetch('/api/translate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: transcript, target: 'en' }),
-        });
-
-        const data = await res.json();
-        const translated = data?.data?.translations?.[0]?.translatedText || '번역 실패';
-        setTranslatedText(translated);
-      };
-
-      recognitionRef.current = recognition;
-    }
-  }, []);
-
-  const handleListen = () => {
-    if (recognitionRef.current) {
-      if (!listening) {
-        recognitionRef.current.start();
-      } else {
-        recognitionRef.current.stop();
-      }
-      setListening(!listening);
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('참석 세션:', sessionId);
+    console.log('입력된 이메일:', email);
+    setSubmitted(true);
+    // router.push(`/session/${sessionId}/live`); // 추후 사용 가능
   };
 
   return (
-    <div className="p-4 max-w-2xl mx-auto text-center">
-      <h1 className="text-2xl font-bold mb-4">실시간 음성 인식 및 번역</h1>
-      <button
-        onClick={handleListen}
-        className="mb-4 px-4 py-2 rounded bg-blue-600 text-white"
-      >
-        {listening ? '중지' : '시작'}
-      </button>
-      <div className="mb-4">
-        <p className="text-sm text-gray-500">🎤 원문:</p>
-        <p className="border rounded p-2 bg-gray-100 min-h-[48px]">{originalText}</p>
+    <main className="min-h-screen bg-white text-gray-900 flex items-center justify-center px-4">
+      <div className="max-w-md w-full space-y-6 border p-6 rounded-xl shadow-md">
+        <h1 className="text-2xl font-bold text-center">TransQR 세미나 참석</h1>
+        {submitted ? (
+          <div className="text-center">
+            <p className="text-green-600 font-semibold">✅ 참석이 확인되었습니다.</p>
+            <p className="text-sm mt-2">곧 통역이 시작됩니다. 이어폰을 착용해 주세요.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <p className="text-sm text-gray-700 text-center">
+              아래에 이메일을 입력하면, 발표 요약본이 세션 종료 후 자동으로 발송됩니다.
+            </p>
+            <input
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+              required
+              className="w-full border border-gray-300 px-4 py-2 rounded-lg"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            >
+              세션 참여하기
+            </button>
+          </form>
+        )}
       </div>
-      <div>
-        <p className="text-sm text-gray-500">🌍 번역:</p>
-        <p className="border rounded p-2 bg-green-50 min-h-[48px]">{translatedText}</p>
-      </div>
-    </div>
+    </main>
   );
 }
+
